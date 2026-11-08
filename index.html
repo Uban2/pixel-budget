@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#12131a" />
+    <meta name="description" content="Пиксельный планировщик бюджета в тенге" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
+    <title>Планировщик бюджета</title>
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="pixel-card app-header">
+        <div class="brand-row">
+          <h1>ПЛАНИРОВЩИК БЮДЖЕТА</h1>
+          <button id="auth-button" class="pixel-button compact" type="button">Войти</button>
+        </div>
+        <div class="period-mode" role="group" aria-label="Период">
+          <button class="mode-button is-active" data-mode="month" type="button">Месяц</button>
+          <button class="mode-button" data-mode="year" type="button">Год</button>
+        </div>
+        <div class="period-picker">
+          <button id="previous-period" class="arrow-button" type="button" aria-label="Предыдущий период">&lt;</button>
+          <strong id="period-label">—</strong>
+          <button id="next-period" class="arrow-button" type="button" aria-label="Следующий период">&gt;</button>
+        </div>
+      </header>
+
+      <div id="sync-banner" class="sync-banner" role="status">Локальный режим: подключи Firebase, чтобы синхронизировать данные.</div>
+
+      <section id="view-chart" class="view is-active" aria-label="Графика">
+        <div class="pixel-card chart-card">
+          <div class="donut-wrap"><canvas id="donut-chart" width="240" height="240" aria-label="Круговая диаграмма расходов"></canvas></div>
+        </div>
+        <section class="pixel-card category-card">
+          <h2>5 ГЛАВНЫХ КАТЕГОРИЙ ТРАТ</h2>
+          <div id="category-list" class="category-list"></div>
+        </section>
+      </section>
+
+      <section id="view-records" class="view" aria-label="Записи">
+        <div class="pixel-card totals-card">
+          <div><span>Расходы:</span><strong id="total-expenses" class="negative">0 ₸</strong></div>
+          <div><span>Доходы:</span><strong id="total-income" class="positive">0 ₸</strong></div>
+          <div><span>Баланс:</span><strong id="total-balance">0 ₸</strong></div>
+        </div>
+        <section class="pixel-card records-card">
+          <div id="records-list" class="records-list"></div>
+        </section>
+      </section>
+
+      <section id="view-plan" class="view" aria-label="План">
+        <div class="pixel-card plan-summary">
+          <h2>ПЛАНИРОВАНИЕ БЮДЖЕТА</h2>
+          <p><span>План: <b id="plan-total">0 ₸</b></span><span class="negative">Траты: <b id="plan-spent">0 ₸</b></span><span class="positive">Ост.: <b id="plan-left">0 ₸</b></span></p>
+          <div class="progress"><i id="plan-progress"></i></div>
+        </div>
+        <section class="pixel-card limits-card">
+          <h2>ВЫДЕЛЕНИЕ ДЕНЕГ НА 5 КАТЕГОРИЙ</h2>
+          <div id="limits-list" class="limits-list"></div>
+        </section>
+      </section>
+
+      <section id="view-add" class="view" aria-label="Ввести операцию">
+        <form id="transaction-form" class="pixel-card transaction-form">
+          <h2>ВВЕДИТЕ ДАННЫЕ ОПЕРАЦИИ</h2>
+          <div class="transaction-type" role="group" aria-label="Тип операции">
+            <button class="type-button is-expense" data-transaction-type="expense" type="button">Расход (−)</button>
+            <button class="type-button" data-transaction-type="income" type="button">Доход (+)</button>
+          </div>
+          <p class="field-label">1. Выберите категорию расходов:</p>
+          <div id="category-picker" class="category-picker"></div>
+          <label class="field-label" for="transaction-date">2. День и сумма:</label>
+          <div class="date-amount-row">
+            <input id="transaction-date" type="date" required />
+            <input id="transaction-amount" inputmode="decimal" min="1" placeholder="0 ₸" required />
+          </div>
+          <div class="quick-amounts" aria-label="Быстрые суммы">
+            <button data-amount="500" type="button">+500</button><button data-amount="1000" type="button">+1000</button><button data-amount="2000" type="button">+2000</button><button data-amount="5000" type="button">+5000</button>
+          </div>
+          <label class="field-label" for="transaction-note">3. Заметка:</label>
+          <input id="transaction-note" maxlength="80" placeholder="Обед, такси, магазин…" />
+          <button id="save-transaction" class="pixel-button save-button" type="submit">+ СОХРАНИТЬ РАСХОД</button>
+        </form>
+      </section>
+
+      <nav class="pixel-card bottom-nav" aria-label="Разделы">
+        <button class="nav-button is-active" data-view="chart" type="button"><span>▥</span>Графика</button>
+        <button class="nav-button" data-view="records" type="button"><span>☷</span>Записи</button>
+        <button class="nav-button" data-view="plan" type="button"><span>◉</span>План</button>
+        <button class="nav-button add" data-view="add" type="button"><span>✚</span>Ввести</button>
+      </nav>
+    </main>
+
+    <dialog id="limit-dialog" class="pixel-dialog">
+      <form id="limit-form" method="dialog">
+        <h2 id="limit-title">ЛИМИТ</h2>
+        <input id="limit-input" inputmode="decimal" min="0" required />
+        <div class="quick-amounts"><button data-limit="5000" type="button">+5000</button><button data-limit="10000" type="button">+10000</button><button data-limit="25000" type="button">+25000</button></div>
+        <div class="dialog-actions"><button class="pixel-button muted" value="cancel" type="button" id="cancel-limit">Отмена</button><button class="pixel-button" value="default" type="submit">Сохранить</button></div>
+      </form>
+    </dialog>
+
+    <template id="empty-records-template"><div class="empty-state"><b>Записей пока нет!</b><p>Нажми «Ввести», чтобы добавить первую операцию.</p></div></template>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
